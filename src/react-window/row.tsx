@@ -1,42 +1,11 @@
-import { FC, Fragment } from 'react';
-import { IAssignee, IAssigneeJobs, LOADING, itemStatusMap } from './api';
+import { FC } from 'react';
+import { LOADING, itemStatusMap } from './api';
+import { LeadRow } from './lead-row';
+import { AssignmentRow } from './assignment-row';
 
 interface RowProps {
   index: number;
   style: CSSStyleRule;
-}
-
-interface LeadRowProps {
-  style: CSSStyleRule;
-  assignee: IAssignee;
-}
-
-interface AssignmentRowProps {
-  style: CSSStyleRule;
-  assignments: IAssigneeJobs;
-}
-
-const LeadRow: FC<LeadRowProps> = ({ style = {}, assignee }) => {
-  const { name } = assignee;
-
-  const rowStyle = {
-    ...style,
-    borderBottom: '1px solid #000',
-    backgroundColor: 'grey',
-    fontWeight: 700,
-  };
-  return <div style={rowStyle}>{name} team</div>;
-}
-
-
-const AssignmentRow: FC<AssignmentRowProps> = ({ style = {}, assignments }) => {
-  const { assignee, jobs } = assignments;
-
-  const rowStyle = {
-    ...style,
-    borderBottom: '1px solid #000'
-  };
-  return <div style={rowStyle}>{assignee.name}: {jobs.flat().length} jobs</div>;
 }
 
 export const Row: FC<RowProps> = (props) => {

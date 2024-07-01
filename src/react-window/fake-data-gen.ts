@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker';
 import { IAssignee, IJob, IAssigneeJobs } from './api';
 
 const ITEM_COUNT = 1000;
-export const DAY_COUNT = 7;
+export const DAY_COUNT = 3;
 let cachedData: IAssigneeJobs[] = [];
 
 export const getData = (): IAssigneeJobs[] => {
