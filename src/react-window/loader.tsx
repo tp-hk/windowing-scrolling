@@ -2,10 +2,10 @@ import { FC } from 'react';
 import InfiniteLoader from 'react-window-infinite-loader';
 import { LOADING, LOADED, itemStatusMap } from './item-status-map';
 import { List } from './list';
-import { createData } from './fake-data-gen';
+import { getData } from './fake-data-gen';
 
 const isItemLoaded = (index: number) => !!(itemStatusMap.get(index)?.status);
-const data = createData();
+const data = getData();
 
 const fetch = (startIndex: number, stopIndex: number) => {
   for (let index = startIndex; index <= stopIndex; index++) {

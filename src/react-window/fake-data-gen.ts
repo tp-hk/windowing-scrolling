@@ -3,7 +3,12 @@ import { IAssignee, IJob, IAssigneeJobs } from './item-status-map';
 
 const ITEM_COUNT = 1000;
 export const DAY_COUNT = 7;
-export const createData = (): IAssigneeJobs[] => {
+let cachedData: IAssigneeJobs[] = [];
+
+export const getData = (): IAssigneeJobs[] => {
+    if (cachedData.length > 0) {
+        return cachedData;
+    }
     
     const data = [];
 
@@ -18,7 +23,8 @@ export const createData = (): IAssigneeJobs[] => {
           });
       };
 
-      return data;
+      cachedData = data;
+      return cachedData;
 }
 
 const createAssignee = (): IAssignee => {
