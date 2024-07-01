@@ -7,25 +7,33 @@ interface RowProps {
 }
 
 interface LeadRowProps {
+  style?: CSSStyleRule;
   assignee: IAssignee;
 }
 
 interface AssignmentRowProps {
+  style?: CSSStyleRule;
   assignments: IAssigneeJobs;
 }
 
+const LeadRow: FC<LeadRowProps> = ({ style = {}, assignee }) => {
+  const { name } = assignee;
 
-const LeadRow: FC<LeadRowProps> = ({ assignee }) => {
   const rowStyle = {
-    backgroundColor: 'grey'
+    ...style,
+    borderBottom: '1px solid #000',
+    backgroundColor: 'grey',
+    color: 'red'
   };
-  return <div style={rowStyle}><button>Close</button> {assignee.name}</div>
+  return <div style={rowStyle}><button>close</button>{name}</div>;
 }
 
-const AssignmentRow: FC<AssignmentRowProps> = ({ assignments }) => {
+
+const AssignmentRow: FC<AssignmentRowProps> = ({ style = {}, assignments }) => {
   const { assignee, jobs } = assignments;
 
   const rowStyle = {
+    ...style,
     borderBottom: '1px solid #000'
   };
   return <div style={rowStyle}>{assignee.name}: {jobs.flat().length} jobs</div>;
@@ -43,13 +51,18 @@ export const Row: FC<RowProps> = (props) => {
     return <div style={rowStyle}>Loading...</div>
   }
 
+
   const rowAssignments = row.assignments;
   const { assignee } = rowAssignments;
 
-  // UI will break if trying to have 2 rows in one row
+    // must pass styles from parent to row
     return <Fragment>
-      { assignee.isLead ? <LeadRow assignee={assignee}/> : null}
+      <div style={style}>
+      {
+        assignee.isLead ? <LeadRow assignee={assignee} /> : null 
+      }
       <AssignmentRow assignments={rowAssignments} />
+      </div>
     </Fragment>
 
 };
