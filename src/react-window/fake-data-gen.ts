@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { IAssignee, IJob, IAssigneeJobs } from './item-status-map';
+import { IAssignee, IJob, IAssigneeJobs } from './api';
 
 const ITEM_COUNT = 1000;
 export const DAY_COUNT = 7;
@@ -10,16 +10,24 @@ export const getData = (): IAssigneeJobs[] => {
         return cachedData;
     }
     
-    const data = [];
+    const data: IAssigneeJobs[] = [];
 
     for (let index = 0; index <= ITEM_COUNT; index++) {
         const assignee = createAssignee();
+        const jobs = createJobsForDays(DAY_COUNT);
         if (index % 10 === 0) {
-          assignee.isLead = true;
+          // push an additional artifician row to create lead row
+          data.push({
+            assignee: {
+                ...assignee,
+                isLead: true,
+            },
+            jobs,
+          });          
         }
         data.push({
             assignee,
-            jobs: createJobsForDays(DAY_COUNT),
+            jobs,
           });
       };
 

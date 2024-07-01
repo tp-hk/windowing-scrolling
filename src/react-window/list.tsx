@@ -16,18 +16,27 @@ export const List: FC<ListProps> = forwardRef((props, ref) => {
       height={500}
       itemCount={1000}
       itemSize={(index: number) => {
+        const assignments = data[index];
+        if (!assignments) {
+          return 0;
+        }
+
+        // fixed size if lead row
+        if (assignments.assignee.isLead) {
+          return 30;
+        }
+
+        // variable size if non-lead row
         let maxJobCount = 0;
-        data[index].jobs.forEach((jobsOnDay) => {
+        assignments.jobs.forEach((jobsOnDay) => {
           if (jobsOnDay.length > maxJobCount) {
             maxJobCount = jobsOnDay.length;
           }
         });
 
-        console.log(`height: ${(maxJobCount + 5) * 20}px`)
         return maxJobCount * 10 + 20;
       }}
       onItemsRendered={(data: any) => {
-        console.log('itemsRendered');
         props.onItemsRendered(data);
       }}
       ref={ref}

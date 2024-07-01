@@ -1,5 +1,5 @@
 import { FC, Fragment } from 'react';
-import { IAssignee, IAssigneeJobs, LOADING, itemStatusMap } from './item-status-map';
+import { IAssignee, IAssigneeJobs, LOADING, itemStatusMap } from './api';
 
 interface RowProps {
   index: number;
@@ -7,12 +7,12 @@ interface RowProps {
 }
 
 interface LeadRowProps {
-  style?: CSSStyleRule;
+  style: CSSStyleRule;
   assignee: IAssignee;
 }
 
 interface AssignmentRowProps {
-  style?: CSSStyleRule;
+  style: CSSStyleRule;
   assignments: IAssigneeJobs;
 }
 
@@ -23,9 +23,9 @@ const LeadRow: FC<LeadRowProps> = ({ style = {}, assignee }) => {
     ...style,
     borderBottom: '1px solid #000',
     backgroundColor: 'grey',
-    color: 'red'
+    fontWeight: 700,
   };
-  return <div style={rowStyle}><button>close</button>{name}</div>;
+  return <div style={rowStyle}>{name} team</div>;
 }
 
 
@@ -51,18 +51,15 @@ export const Row: FC<RowProps> = (props) => {
     return <div style={rowStyle}>Loading...</div>
   }
 
+  // must pass styles from parent to row
 
   const rowAssignments = row.assignments;
   const { assignee } = rowAssignments;
 
-    // must pass styles from parent to row
-    return <Fragment>
-      <div style={style}>
-      {
-        assignee.isLead ? <LeadRow assignee={assignee} /> : null 
-      }
-      <AssignmentRow assignments={rowAssignments} />
-      </div>
-    </Fragment>
+  if (assignee.isLead) {
+    return <LeadRow style={style} assignee={assignee} />;
+  }
+
+    return <AssignmentRow style={style} assignments={rowAssignments} />
 
 };
