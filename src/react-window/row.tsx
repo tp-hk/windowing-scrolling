@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { LOADED, itemStatusMap } from './item-status-map';
+import { LOADING, itemStatusMap } from './item-status-map';
 
 interface RowProps {
   index: number;
@@ -8,11 +8,15 @@ interface RowProps {
 
 export const Row: FC<RowProps> = (props) => {
   const { index, style } = props;
-  let label = '';
-  if (itemStatusMap[index] === LOADED) {
-    label = `Row ${index}`;
-  } else {
-    label = 'Loading...';
+  const rowStyle = {
+    ...style,
+    borderBottom: '1px solid #000'
+  };
+  const row = itemStatusMap.get(index);
+
+  if (!row || row.status === LOADING) {
+    return <div style={rowStyle}>Loading...</div>
   }
-  return <div style={style}>{label}</div>;
+
+  return <div style={rowStyle}>{row.assignments.assignee.name}: {row.assignments.jobs.flat().length} jobs</div>
 };
