@@ -16,6 +16,7 @@ export const List: FC<ListProps> = forwardRef((props, ref) => {
       onItemsRendered={props.onItemsRendered}
       ref={ref}
       width={300}
+      overscanCount={20}
     >
       {Row}
     </FixedSizeList>
