@@ -2,7 +2,7 @@
 
 ### Must
 - DONE: variable size row
-- row with columns
+- DONE: row with columns
 - invisible row changes height at run time
 - visible row changes height at run time
 - row removed at runtime

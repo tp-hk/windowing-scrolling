@@ -1,15 +1,19 @@
-import { FC, forwardRef } from 'react';
+import { FC, forwardRef, useEffect, useContext } from 'react';
 import { VariableSizeList } from 'react-window';
 import { Row } from './row';
-import { getData } from './fake-data-gen';
+import { DataContext, data } from './api';
 
 interface ListProps {
   onItemsRendered: Function;
 }
 
-const data = getData();
-
 export const List: FC<ListProps> = forwardRef((props, ref) => {
+  const { rowMap } = useContext(DataContext);
+  
+  useEffect(() => { 
+    !!rowMap?.size && (ref as any).current?.resetAfterIndex?.(0); 
+  }, [rowMap]);
+
   return (
     <VariableSizeList
       style={{ border: '1px solid #000' }}
@@ -17,6 +21,7 @@ export const List: FC<ListProps> = forwardRef((props, ref) => {
       itemCount={1000}
       itemSize={(index: number) => {
         const assignments = data[index];
+
         if (!assignments) {
           return 0;
         }
@@ -34,7 +39,7 @@ export const List: FC<ListProps> = forwardRef((props, ref) => {
           }
         });
 
-        return maxJobCount * 10 + 20;
+        return maxJobCount * 30;
       }}
       onItemsRendered={(data: any) => {
         props.onItemsRendered(data);

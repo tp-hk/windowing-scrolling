@@ -15,6 +15,7 @@ export const AssignmentRow: FC<AssignmentRowProps> = ({ style, assignments }) =>
     borderBottom: '1px solid #000',
     display: 'flex',
     flexDirection: 'row',
+    columnGap: '2px'
   };
 
   const colStyle = {
@@ -22,10 +23,10 @@ export const AssignmentRow: FC<AssignmentRowProps> = ({ style, assignments }) =>
   };
 
   return <div style={rowStyle}>
-    <Cell style={colStyle}>{assignee.name}</Cell>
+    <Cell style={colStyle}>{assignee.name}: {jobs.map(jobsOnDay => jobsOnDay.length).join(', ')}</Cell>
     {
-        jobs.map(jobsOnDay => {
-            return <Cell style={colStyle}>{jobsOnDay.length} jobs</Cell>
+        jobs.map((jobsOnDay, index) => {
+            return <Cell key={index} style={colStyle} jobsInOneDay={jobsOnDay}>{jobsOnDay.length} jobs</Cell>
         })
     }
   </div>;
