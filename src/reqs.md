@@ -6,12 +6,12 @@
 - DONE: visible row changes height at run time
 - DONE: row removed at runtime
 - DONE: row added at runtime 
-- overscanCount
 - open/collapse group
 - sticky rows
-- (should) Sticky columns
 - DONE: jump to group
 - virtual scroll upward
+- Infinite scrolling
+- (should) Sticky columns
 
 
 ### react-window
