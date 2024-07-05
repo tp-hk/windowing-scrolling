@@ -6,10 +6,11 @@ interface HeaderProps {
     removeJob: (rangeOption: RangeOption) => void;
     addAssignee: (rangeOption: RangeOption) => void;
     removeAssignee: (rangeOption: RangeOption) => void;
+    jumpToLead: () => void;
 } 
 
 export const Header: FC<HeaderProps> = ({
-    addJob, removeJob, addAssignee, removeAssignee
+    addJob, removeJob, addAssignee, removeAssignee, jumpToLead
 }) => {
     return <div>
         <div>
@@ -53,6 +54,14 @@ export const Header: FC<HeaderProps> = ({
                     <button onClick={() => removeAssignee(RangeOption.After)}>- after</button>
                 </div>
             </div>
+        </div>
+        <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px'
+        }}>
+            Jump to leads
+            <button onClick={jumpToLead}>Jump to Lead</button>
         </div>
     </div>
 }

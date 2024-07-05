@@ -3,17 +3,14 @@
 ### tanstack/react-virtualized
 - DONE: variable size row
 - DONE: row with columns
-- visible row changes height at run time
+- DONE: visible row changes height at run time
 - DONE: row removed at runtime
 - DONE: row added at runtime 
-- row change size
 - overscanCount
 - open/collapse group
-- last row in group to add row
 - sticky rows
-- filter by group 
 - (should) Sticky columns
-- (should) jump to group
+- DONE: jump to group
 - virtual scroll upward
 
 

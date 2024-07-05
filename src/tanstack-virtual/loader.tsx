@@ -12,20 +12,25 @@ const adaptData = (data: IAssigneeJobs[]) => {
         if (item.assignee.id === item.assignee.leadId) {
             items.push({
                 ...item,
-                isLeadRow: true
+                isLeadRow: true,
+                rowId: item.assignee.id + 1
             });
         }
         items.push({
             ...item,
-            isLeadRow: false
+            isLeadRow: false,
+            rowId: item.assignee.id
         })
     }
     return items;
 }
 
+const leads = data.filter(assignment => assignment.assignee.isLead);
+
 export const Loader: FC = () => {
     const [displayedItems, setDisplayedItems] = useState<IDisplayRow[]>([]); 
     const parentRef = useRef<HTMLDivElement>(null);
+    const leadIndexRef = useRef(0);
     const rangeRef = useRef<Range>({
         startIndex: 0, 
         endIndex: 0,
@@ -107,10 +112,19 @@ export const Loader: FC = () => {
         setDisplayedItems(adaptData(data));
     }
 
+    const jumpToLead = () => {
+        leadIndexRef.current += 1;
+        const lead = leads[leadIndexRef.current];
+        console.log(`scrolling to lead ${lead.assignee.name}`);
+        const rowIndex = displayedItems.findIndex(item => item.assignee.id === lead.assignee.id) ?? 0;
+        virtualizer.scrollToIndex(rowIndex);
+    }
+
     const virtualizer = useVirtualizer({
         count: displayedItems.length,
         getScrollElement: () => parentRef.current,
         estimateSize: () => 30 * (5 + 1),
+        overscan: 0,
         rangeExtractor: (range ) => {
             rangeRef.current = range;
             const indices: number[] = [];
@@ -118,6 +132,10 @@ export const Loader: FC = () => {
                 indices.push(i);
             }
             return indices;
+        },
+        getItemKey: (index) => {
+            const row = displayedItems[index];
+            return row.isLeadRow ? row.assignee.id + 1 : row.assignee.id; 
         }
     });
 
@@ -125,7 +143,13 @@ export const Loader: FC = () => {
 
     return (
         <Fragment>
-            <Header addJob={addJob} removeJob={removeJob} addAssignee={addAssignee} removeAssignee={removeAssignee} />
+            <Header
+                addJob={addJob}
+                removeJob={removeJob}
+                addAssignee={addAssignee}
+                removeAssignee={removeAssignee}
+                jumpToLead={jumpToLead}
+            />
             <div
                 ref={parentRef}
                 className="List"
@@ -135,7 +159,7 @@ export const Loader: FC = () => {
                     overflowY: 'auto',
                     contain: 'strict',
                     border: '1px solid #000',
-                    marginTop: '8px'
+                    marginTop: '8px',
                 }}
             >
                 <div

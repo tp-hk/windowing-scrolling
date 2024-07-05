@@ -1,4 +1,4 @@
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode, useEffect } from 'react';
 import { IDisplayRow, IJob, DAY_COUNT } from './api';
 import { JobBlock } from './job-block';
 

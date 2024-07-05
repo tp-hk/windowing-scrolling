@@ -31,6 +31,7 @@ export interface IAssigneeJobs {
 }
 
 export interface IDisplayRow extends IAssigneeJobs {
+    rowId: number;
     isLeadRow: boolean;
 }
 
