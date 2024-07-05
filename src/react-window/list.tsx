@@ -10,9 +10,10 @@ interface ListProps {
 export const List: FC<ListProps> = forwardRef((props, ref) => {
   const { rowMap } = useContext(DataContext);
   
-  useEffect(() => { 
-    !!rowMap?.size && (ref as any).current?.resetAfterIndex?.(0); 
-  }, [rowMap]);
+  // useEffect(() => { 
+  //   console.log(`list: rowMapSize: ${rowMap?.size ?? 0}; resetAfterIndex? ${!!(ref?.current?.resetAfterIndex)}`)
+  //   !!rowMap?.size && (ref as any).current?.resetAfterIndex?.(0); 
+  // }, [rowMap]);
 
   return (
     <VariableSizeList

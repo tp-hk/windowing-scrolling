@@ -28,16 +28,18 @@ interface IRow {
     assignments: IAssigneeJobs;
 }
 
-export const itemStatusMap: Map<number, IRow> = new Map();
+export type ItemStatusMap = Map<number, IRow>;
+
+export const itemStatusMap: ItemStatusMap = new Map();
 
 export interface IEdits {
   add?: any;
-  delete?: Map<number, IRow>;
+  delete?: number[];
   update?: any;
 }
 
 interface IData {
-  rowMap: Map<number, IRow>;
+  rowMap: ItemStatusMap;
   updateMap: (edits: IEdits) => void;
 }
 
@@ -46,7 +48,7 @@ export const DataContext = createContext<IData>({
   updateMap: (_: IEdits) => {}
 });
 
-export const fetch = (startIndex: number, stopIndex: number): Promise<void> => {
+export const fetch = (startIndex: number, stopIndex: number): Promise<ItemStatusMap> => {
     for (let index = startIndex; index <= stopIndex; index++) {
       if (itemStatusMap.get(index)) {
         itemStatusMap.get(index)!.status = LOADING;
@@ -60,7 +62,7 @@ export const fetch = (startIndex: number, stopIndex: number): Promise<void> => {
             assignments: data[index],
           });
         }
-        resolve();
+        resolve(itemStatusMap);
       }, 200)
     );
   };
