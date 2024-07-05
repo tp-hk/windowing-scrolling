@@ -1,14 +1,9 @@
 import { FC, useRef, useEffect, useState, Fragment } from 'react';
 import { useVirtualizer, Range } from '@tanstack/react-virtual';
-import { DAY_COUNT, IAssigneeJobs, IDisplayRow, data } from './api';
+import { DAY_COUNT, IAssigneeJobs, IDisplayRow, data, createAssignee, createJobsForDays, RangeOption } from './api';
 import { Row } from './row';
 import { faker } from '@faker-js/faker';
-
-enum RangeOption {
-    Before,
-    Within,
-    After
-}
+import { Header } from './header';
 
 const adaptData = (data: IAssigneeJobs[]) => {
     const items: IDisplayRow[] = [];
@@ -63,7 +58,7 @@ export const Loader: FC = () => {
         const rowIndex = getRowIndex(rangeOption);
 
         const { assignee } = data[rowIndex];
-        console.log(`adding to ${assignee.name}`);
+        console.log(`adding job to ${assignee.name}`);
         data[rowIndex].jobs.push({
             id: faker.number.int(),
             dayIndex: faker.number.int({ min: 0, max: DAY_COUNT - 1}),
@@ -78,9 +73,37 @@ export const Loader: FC = () => {
         const rowIndex = getRowIndex(rangeOption);
 
         const { assignee } = data[rowIndex];
-        console.log(`removing from ${assignee.name}`);
+        console.log(`removing job from ${assignee.name}`);
 
         data[rowIndex].jobs.pop();
+        setDisplayedItems(adaptData(data));
+    }
+
+    const addAssignee = (rangeOption: RangeOption) => {
+        const rowIndex = getRowIndex(rangeOption);
+        const lastRow = data[rowIndex - 1];
+        let lastLeadId = -1;
+        let isLead = false;
+        if (lastRow) {
+            lastLeadId = lastRow.assignee.leadId;
+        } else {
+            isLead = true;
+        }
+        const assignee = createAssignee(isLead, lastLeadId);
+        const jobs = createJobsForDays(assignee.id);
+        data.splice(rowIndex, 0, {
+            assignee, 
+            jobs
+        });
+        console.log(`added assignee ${assignee.name}`);
+        setDisplayedItems(adaptData(data));
+    }
+
+    const removeAssignee = (rangeOption: RangeOption) => {
+        const rowIndex = getRowIndex(rangeOption);
+        
+        data.splice(rowIndex, 1);
+        console.log(`removed assignee ${data[rowIndex].assignee.name}`);
         setDisplayedItems(adaptData(data));
     }
 
@@ -102,26 +125,7 @@ export const Loader: FC = () => {
 
     return (
         <Fragment>
-            <div>
-                <div>
-                    <div style={{
-                        display: 'flex',
-                        gap: '2px'
-                    }}>
-                        <button onClick={() => addJob(RangeOption.Before)}>+ before</button>
-                        <button onClick={() => addJob(RangeOption.Within)}>+</button>
-                        <button onClick={() => addJob(RangeOption.After)}>+ after</button>
-                    </div>
-                    <div style={{
-                        display: 'flex',
-                        gap: '2px'
-                    }}>
-                        <button onClick={() => removeJob(RangeOption.Before)}>- before</button>
-                        <button onClick={() => removeJob(RangeOption.Within)}>-</button>
-                        <button onClick={() => removeJob(RangeOption.After)}>- after</button>
-                    </div>
-                </div>
-            </div>
+            <Header addJob={addJob} removeJob={removeJob} addAssignee={addAssignee} removeAssignee={removeAssignee} />
             <div
                 ref={parentRef}
                 className="List"

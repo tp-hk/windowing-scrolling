@@ -1,5 +1,10 @@
-// import { createContext } from 'react';
 import { faker } from '@faker-js/faker';
+
+export enum RangeOption {
+    Before,
+    Within,
+    After
+}
 
 export const LOADING = 1;
 export const LOADED = 2;
@@ -29,11 +34,6 @@ export interface IDisplayRow extends IAssigneeJobs {
     isLeadRow: boolean;
 }
 
-// export const DataContext = createContext<IData>({
-//   rowMap: new Map(),
-//   updateMap: (_: IEdits) => {}
-// });
-
 export const fetch = (startIndex: number, stopIndex: number): Promise<IAssigneeJobs[]> => {
     return new Promise((resolve) =>
       setTimeout(() => {
@@ -53,10 +53,8 @@ const getData = (): IAssigneeJobs[] => {
     let lastLeadId = -1;
     for (let index = 0; index < ITEM_COUNT; index++) {
         const isLead = index % 10 === 0;
-        const assignee = createAssignee();
+        const assignee = createAssignee(isLead, lastLeadId);
         if (isLead) {
-            assignee.isLead = true;
-            assignee.leadId = assignee.id;
             lastLeadId = assignee.id; 
         } else {
             assignee.leadId = lastLeadId;
@@ -74,12 +72,13 @@ const getData = (): IAssigneeJobs[] => {
       return cachedData;
 }
 
-const createAssignee = (): IAssignee => {
+export const createAssignee = (isLead: boolean, leadId: number): IAssignee => {
+    const id = faker.number.int();
     return {
-        id: faker.number.int(),
+        id,
         name: faker.person.firstName(),
-        isLead: false,
-        leadId: -1,
+        isLead,
+        leadId: isLead? id : leadId,
       };
   }
 
@@ -99,7 +98,7 @@ const createJobs = (jobCount: number, assignee: number): IJob[] => {
     });
 }
 
-const createJobsForDays = (assignee: number): IJob[] => {
+export const createJobsForDays = (assignee: number): IJob[] => {
     const jobs: IJob[] = [];
     const jobCount = faker.number.int({
         min: 0,

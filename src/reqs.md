@@ -4,8 +4,8 @@
 - DONE: variable size row
 - DONE: row with columns
 - visible row changes height at run time
-- row removed at runtime
-- row added at runtime 
+- DONE: row removed at runtime
+- DONE: row added at runtime 
 - row change size
 - overscanCount
 - open/collapse group
