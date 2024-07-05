@@ -23,14 +23,14 @@ export const AssignmentRow: FC<RowProps> = ({ rowData }) => {
 
     const getColumns = () => {
         const cols: ReactNode[] = [];
-        cols.push(<div style={{width: `${colWidth}%`}}>{assignee.name}</div>);
+        cols.push(<div key={`assignee-${assignee.id}`}  style={{width: `${colWidth}%`}}>{assignee.name}</div>);
         for (let i=0; i<DAY_COUNT; i++) {
             const jobBlock: ReactNode[] = [];
             const jobs = (jobsBydays.get(i) ?? []);
             for (let j=0; j<jobs.length; j++) {
-                jobBlock.push(<JobBlock />);
+                jobBlock.push(<JobBlock key={`day-${i}-job[${jobs[j].id}]`} />);
             }
-            cols.push(<div style={{width: `${colWidth}%`}}>{jobBlock}</div>)
+            cols.push(<div key={`day-${i}`} style={{width: `${colWidth}%`}}>{jobBlock}</div>)
         }
         return cols;
     }

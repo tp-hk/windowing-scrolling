@@ -6,17 +6,18 @@ export const LOADED = 2;
 const ITEM_COUNT = 1000;
 export const DAY_COUNT = 3;
 
-export interface IJob {
-    id: number;
-    location: string;
-    dayIndex: number;
-}
-
 export interface IAssignee {
     id: number;
     name: string;
     isLead: boolean;
     leadId: number;
+}
+
+export interface IJob {
+    id: number;
+    location: string;
+    dayIndex: number;
+    assignee: number,
 }
 
 export interface IAssigneeJobs {
