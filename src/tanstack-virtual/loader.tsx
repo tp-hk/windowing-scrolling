@@ -25,18 +25,40 @@ const adaptData = (data: IAssigneeJobs[]) => {
     return items;
 }
 
+const defaultRange: Range = {
+    startIndex: 0, 
+    endIndex: 0,
+    overscan: 0,
+    count: 0
+};
+
 const leads = data.filter(assignment => assignment.assignee.isLead);
 
 export const Loader: FC = () => {
     const [displayedItems, setDisplayedItems] = useState<IDisplayRow[]>([]); 
     const parentRef = useRef<HTMLDivElement>(null);
     const leadIndexRef = useRef(0);
-    const rangeRef = useRef<Range>({
-        startIndex: 0, 
-        endIndex: 0,
-        overscan: 0,
-        count: 0
-    })
+    const rangeRef = useRef<Range>(defaultRange);
+
+    const virtualizer = useVirtualizer({
+        count: displayedItems.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 30 * (5 + 1),
+        rangeExtractor: (range ) => {
+            rangeRef.current = range;
+            const indices: number[] = [];
+            for (let i=range.startIndex; i<=range.endIndex; i++) {
+                indices.push(i);
+            }
+            return indices;
+        },
+        getItemKey: (index) => {
+            const row = displayedItems[index];
+            return row.isLeadRow ? row.assignee.id + 1 : row.assignee.id; 
+        }
+    });
+
+    const virtualizedItems = virtualizer.getVirtualItems();
 
     useEffect(() => {
         setDisplayedItems(adaptData(data));
@@ -119,27 +141,6 @@ export const Loader: FC = () => {
         const rowIndex = displayedItems.findIndex(item => item.assignee.id === lead.assignee.id) ?? 0;
         virtualizer.scrollToIndex(rowIndex);
     }
-
-    const virtualizer = useVirtualizer({
-        count: displayedItems.length,
-        getScrollElement: () => parentRef.current,
-        estimateSize: () => 30 * (5 + 1),
-        overscan: 0,
-        rangeExtractor: (range ) => {
-            rangeRef.current = range;
-            const indices: number[] = [];
-            for (let i=range.startIndex; i<=range.endIndex; i++) {
-                indices.push(i);
-            }
-            return indices;
-        },
-        getItemKey: (index) => {
-            const row = displayedItems[index];
-            return row.isLeadRow ? row.assignee.id + 1 : row.assignee.id; 
-        }
-    });
-
-    const virtualizedItems = virtualizer.getVirtualItems();
 
     return (
         <Fragment>
