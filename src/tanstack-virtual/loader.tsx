@@ -1,9 +1,23 @@
 import { FC, useRef, useEffect, useState, Fragment } from 'react';
 import { useVirtualizer, Range } from '@tanstack/react-virtual';
-import { DAY_COUNT, IAssigneeJobs, IDisplayRow, data, createAssignee, createJobsForDays, RangeOption, RowType } from './api';
+import { DAY_COUNT, IAssigneeJobs, IDisplayRow, data, createAssignee, createJobsForDays, RangeOption, RowType, fetch } from './api';
 import { Row } from './row';
 import { faker } from '@faker-js/faker';
 import { Header } from './header';
+
+const defaultRange: Range = {
+    startIndex: 0, 
+    endIndex: 0,
+    overscan: 0,
+    count: 0
+};
+
+const leads = data.filter(assignment => assignment.assignee.isLead);
+
+const findDataIndexFromAssignedId = (assigneeId: number) => {
+    const dataIndex = data.findIndex(item => item.assignee.id === assigneeId);
+    return dataIndex
+}
 
 const adaptData = (data: IAssigneeJobs[]) => {
     const items: IDisplayRow[] = [];
@@ -30,20 +44,16 @@ const adaptData = (data: IAssigneeJobs[]) => {
     return items;
 }
 
-const defaultRange: Range = {
-    startIndex: 0, 
-    endIndex: 0,
-    overscan: 0,
-    count: 0
-};
-
-const leads = data.filter(assignment => assignment.assignee.isLead);
+const FETCH_COUNT = 10;
+let isMounted = false;
 
 export const Loader: FC = () => {
     const [displayedItems, setDisplayedItems] = useState<IDisplayRow[]>([]); 
     const parentRef = useRef<HTMLDivElement>(null);
     const leadIndexRef = useRef(0);
     const rangeRef = useRef<Range>(defaultRange);
+    const cursorRef = useRef(0);
+    const itemsRef = useRef<IDisplayRow[]>([]);
 
     const virtualizer = useVirtualizer({
         count: displayedItems.length,
@@ -57,18 +67,33 @@ export const Loader: FC = () => {
             }
             return indices;
         },
-        getItemKey: (index) => {
-            const row = displayedItems[index];
+        // getItemKey: (index) => {
+        //     const row = displayedItems[index];
 
-            return row.rowType === RowType.LeadRow ? row.rowData!.assignee.id + 1 : 
-            row.rowType === RowType.AssignmentRow ? row.rowData!.assignee.id : -1; 
-        }
+        //     return row.rowType === RowType.LeadRow ? row.rowData!.assignee.id + 1 : 
+        //     row.rowType === RowType.AssignmentRow ? row.rowData!.assignee.id : -1; 
+        // }
     });
 
     const virtualizedItems = virtualizer.getVirtualItems();
 
+    const fetchData = async () => {
+        const fetchedData = await fetch(cursorRef.current, FETCH_COUNT);
+        cursorRef.current = cursorRef.current + FETCH_COUNT + 1;
+
+        itemsRef.current.push(...adaptData(fetchedData));
+        setDisplayedItems(itemsRef.current);
+    }
+
     useEffect(() => {
-        setDisplayedItems(adaptData(data));
+        if (!isMounted) {
+            (async function () {
+                await fetchData();
+            }());
+        }
+
+        // workaround for the double-mount issue
+        isMounted = true;
     }, []);
 
     const getRowIndex = (rangeOption: RangeOption) => {
@@ -90,55 +115,100 @@ export const Loader: FC = () => {
     
     const addJob = (rangeOption: RangeOption) => {
         const rowIndex = getRowIndex(rangeOption);
-
-        const { assignee } = data[rowIndex];
+        const rowData = displayedItems[rowIndex].rowData;
+        if (!rowData) {
+            return;
+        }
+        const { assignee } = rowData;
         console.log(`adding job to ${assignee.name}`);
-        data[rowIndex].jobs.push({
+
+        // supposedly server side operation
+        const dataIndex = data.findIndex(item => item.assignee.id === assignee.id);
+        if (dataIndex === -1) {
+            return;
+        }
+        data[dataIndex].jobs.push({
             id: faker.number.int(),
             dayIndex: faker.number.int({ min: 0, max: DAY_COUNT - 1}),
             location: faker.location.city(),
             assignee: assignee.id,
         });
 
-        setDisplayedItems(adaptData(data));
+        // client side operation
+        setDisplayedItems([...itemsRef.current]);
     }
 
     const removeJob = (rangeOption: RangeOption) => {
         const rowIndex = getRowIndex(rangeOption);
-
-        const { assignee } = data[rowIndex];
+        
+        const rowData = displayedItems[rowIndex].rowData;
+        if (!rowData) {
+            return;
+        }
+        const { assignee } = rowData;
         console.log(`removing job from ${assignee.name}`);
 
-        data[rowIndex].jobs.pop();
-        setDisplayedItems(adaptData(data));
+        // supposedly server side operation
+        const dataIndex = data.findIndex(item => item.assignee.id === assignee.id);
+        if (dataIndex === -1) {
+            return;
+        }
+        data[dataIndex].jobs.pop();
+ 
+        // client side operation
+        setDisplayedItems([...itemsRef.current]);
     }
 
     const addAssignee = (rangeOption: RangeOption) => {
-        const rowIndex = getRowIndex(rangeOption);
-        const lastRow = data[rowIndex - 1];
+        const origRowData = getRowIndex(rangeOption);
+        const rowIndex = origRowData === 0 ? 1 : origRowData;
+        const lastRow = displayedItems[rowIndex - 1];
+        if (!lastRow.rowData) {
+            return;
+        }
+
         let lastLeadId = -1;
         let isLead = false;
-        if (lastRow) {
-            lastLeadId = lastRow.assignee.leadId;
+        if (lastRow && lastRow.rowData.assignee) {
+            lastLeadId = lastRow.rowData.assignee.leadId;
         } else {
             isLead = true;
         }
         const assignee = createAssignee(isLead, lastLeadId);
         const jobs = createJobsForDays(assignee.id);
+
+        // supposedly server side operation
         data.splice(rowIndex, 0, {
             assignee, 
             jobs
         });
+
         console.log(`added assignee ${assignee.name}`);
-        setDisplayedItems(adaptData(data));
+
+        const newRows = adaptData([data[rowIndex]]);
+        const itemsClone = [...itemsRef.current];
+        itemsClone.splice(rowIndex, 0, ...newRows);
+        setDisplayedItems(itemsClone);
     }
 
     const removeAssignee = (rangeOption: RangeOption) => {
         const rowIndex = getRowIndex(rangeOption);
+        const row = displayedItems[rowIndex];
+        if (!row.rowData) {
+            return;
+        }
         
-        data.splice(rowIndex, 1);
-        console.log(`removed assignee ${data[rowIndex].assignee.name}`);
-        setDisplayedItems(adaptData(data));
+        // supposedly server side operation
+        const dataIndex = data.findIndex(item => item.assignee.id === row.rowData!.assignee.id);
+        if (dataIndex === -1) {
+            return;
+        }
+        console.log(`removed assignee ${data[dataIndex].assignee.name}`);
+        data.splice(dataIndex, 1);
+
+        const itemsClone = [...itemsRef.current];
+        itemsClone.splice(rowIndex, 1);
+        setDisplayedItems(itemsClone);
     }
 
     const jumpToLead = () => {
@@ -146,7 +216,7 @@ export const Loader: FC = () => {
         const lead = leads[leadIndexRef.current];
         const leadId = lead.assignee.id;
         console.log(`scrolling to lead ${leadId}: ${lead.assignee.name}`);
-        const rowIndex = displayedItems.findIndex(item => item.rowData!.assignee.id === lead.assignee.id) ?? 0;
+        const rowIndex = displayedItems.findIndex(item => item.rowData?.assignee.id === lead.assignee.id) ?? 0;
         virtualizer.scrollToIndex(rowIndex);
     }
 

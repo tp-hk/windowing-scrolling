@@ -34,7 +34,7 @@ export const Header: FC<HeaderProps> = ({
                 </div>
             </div>
         </div>
-        <div>
+        {/* <div>
             Add/remove Assignee
             <div>
                 <div style={{
@@ -54,7 +54,7 @@ export const Header: FC<HeaderProps> = ({
                     <button onClick={() => removeAssignee(RangeOption.After)}>- after</button>
                 </div>
             </div>
-        </div>
+        </div> */}
         <div style={{
                 display: 'flex',
                 flexDirection: 'column',

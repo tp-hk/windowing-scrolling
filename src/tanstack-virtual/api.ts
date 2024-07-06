@@ -42,10 +42,10 @@ export enum RowType {
     LoadingRow,
 }
 
-export const fetch = (startIndex: number, stopIndex: number): Promise<IAssigneeJobs[]> => {
+export const fetch = (startIndex: number, count: number): Promise<IAssigneeJobs[]> => {
     return new Promise((resolve) =>
       setTimeout(() => {
-        resolve(data.slice(startIndex, stopIndex));
+        resolve(data.slice(startIndex, startIndex + count));
       }, 200)
     );
   };
