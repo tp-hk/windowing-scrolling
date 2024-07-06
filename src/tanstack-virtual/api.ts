@@ -30,9 +30,16 @@ export interface IAssigneeJobs {
     jobs: IJob[]
 }
 
-export interface IDisplayRow extends IAssigneeJobs {
+export interface IDisplayRow {
     rowId: number;
-    isLeadRow: boolean;
+    rowType: RowType;
+    rowData: IAssigneeJobs | null;
+}
+
+export enum RowType {
+    LeadRow,
+    AssignmentRow,
+    LoadingRow,
 }
 
 export const fetch = (startIndex: number, stopIndex: number): Promise<IAssigneeJobs[]> => {

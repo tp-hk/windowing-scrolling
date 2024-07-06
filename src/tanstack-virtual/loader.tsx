@@ -1,6 +1,6 @@
 import { FC, useRef, useEffect, useState, Fragment } from 'react';
 import { useVirtualizer, Range } from '@tanstack/react-virtual';
-import { DAY_COUNT, IAssigneeJobs, IDisplayRow, data, createAssignee, createJobsForDays, RangeOption } from './api';
+import { DAY_COUNT, IAssigneeJobs, IDisplayRow, data, createAssignee, createJobsForDays, RangeOption, RowType } from './api';
 import { Row } from './row';
 import { faker } from '@faker-js/faker';
 import { Header } from './header';
@@ -11,17 +11,22 @@ const adaptData = (data: IAssigneeJobs[]) => {
         const item = data[i];
         if (item.assignee.id === item.assignee.leadId) {
             items.push({
-                ...item,
-                isLeadRow: true,
-                rowId: item.assignee.id + 1
+                rowId: item.assignee.id + 1,
+                rowType: RowType.LeadRow,
+                rowData: item,
             });
         }
         items.push({
-            ...item,
-            isLeadRow: false,
-            rowId: item.assignee.id
+            rowId: item.assignee.id,
+            rowType: RowType.AssignmentRow,
+            rowData: item,
         })
     }
+    items.push({
+        rowId: -1,
+        rowType: RowType.LoadingRow,
+        rowData: null,
+    })
     return items;
 }
 
@@ -54,7 +59,9 @@ export const Loader: FC = () => {
         },
         getItemKey: (index) => {
             const row = displayedItems[index];
-            return row.isLeadRow ? row.assignee.id + 1 : row.assignee.id; 
+
+            return row.rowType === RowType.LeadRow ? row.rowData!.assignee.id + 1 : 
+            row.rowType === RowType.AssignmentRow ? row.rowData!.assignee.id : -1; 
         }
     });
 
@@ -137,8 +144,9 @@ export const Loader: FC = () => {
     const jumpToLead = () => {
         leadIndexRef.current += 1;
         const lead = leads[leadIndexRef.current];
-        console.log(`scrolling to lead ${lead.assignee.name}`);
-        const rowIndex = displayedItems.findIndex(item => item.assignee.id === lead.assignee.id) ?? 0;
+        const leadId = lead.assignee.id;
+        console.log(`scrolling to lead ${leadId}: ${lead.assignee.name}`);
+        const rowIndex = displayedItems.findIndex(item => item.rowData!.assignee.id === lead.assignee.id) ?? 0;
         virtualizer.scrollToIndex(rowIndex);
     }
 
@@ -181,13 +189,13 @@ export const Loader: FC = () => {
                     >
                     {
                         virtualizedItems.map((virtualRow => {
-                            const assigneeJobs = displayedItems[virtualRow.index];
+                            const item = displayedItems[virtualRow.index];
                             return (
                                 <div 
                                     key={virtualRow.key}
                                     data-index={virtualRow.index}
                                     ref={virtualizer.measureElement}>
-                                        <Row rowData={assigneeJobs} />
+                                        <Row data={item} />
                                 </div>
                                 
                             )

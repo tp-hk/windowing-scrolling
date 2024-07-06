@@ -1,9 +1,9 @@
 import { FC, ReactNode, useEffect } from 'react';
-import { IDisplayRow, IJob, DAY_COUNT } from './api';
+import { IDisplayRow, IJob, DAY_COUNT, IAssigneeJobs } from './api';
 import { JobBlock } from './job-block';
 
 interface RowProps {
-    rowData: IDisplayRow;
+    rowData: IAssigneeJobs;
 }
 
 const groupJobsByDays = (jobs: IJob[]): Map<number, IJob[]> => {
