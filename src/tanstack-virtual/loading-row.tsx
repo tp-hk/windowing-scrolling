@@ -30,7 +30,7 @@ export const LoadingRow: FC<LoadingRowProps> = ({ fetchData }) => {
   
     return (
         <div ref={ref} style={{
-            height: `1px`,
+            height: '1px',
         }}/>
     );
 };

@@ -8,7 +8,7 @@ export enum RangeOption {
 
 export const LOADING = 1;
 export const LOADED = 2;
-const ITEM_COUNT = 1000;
+const ITEM_COUNT = 95;
 export const DAY_COUNT = 3;
 
 export interface IAssignee {
