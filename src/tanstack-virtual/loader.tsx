@@ -33,13 +33,16 @@ const adaptData = (currentRows: IDisplayRow[], data: IAssigneeJobs[]) => {
             rowId: item.assignee.id,
             rowType: RowType.AssignmentRow,
             rowData: item,
-        })
+        });
+
+        if (i === Math.round(data.length/2)) {
+            newRows.push({
+                rowId: -1,
+                rowType: RowType.LoadingRow,
+                rowData: null,
+            });
+        }
     }
-    newRows.push({
-        rowId: -1,
-        rowType: RowType.LoadingRow,
-        rowData: null,
-    })
 
     return [...currentRowsClone, ...newRows];
 }
@@ -78,6 +81,7 @@ export const Loader: FC = () => {
     const virtualizedItems = virtualizer.getVirtualItems();
 
     const fetchData = async () => {
+        console.log(`fetching...${cursorRef.current} - ${cursorRef.current + FETCH_COUNT}`);
         const fetchedData = await fetch(cursorRef.current, FETCH_COUNT);
         cursorRef.current = cursorRef.current + FETCH_COUNT; // NOT cursorRef.current + FETCH_COUNT + 1
 
