@@ -14,29 +14,34 @@ const defaultRange: Range = {
 
 const leads = data.filter(assignment => assignment.assignee.isLead);
 
-const adaptData = (data: IAssigneeJobs[]) => {
-    const items: IDisplayRow[] = [];
+const adaptData = (currentRows: IDisplayRow[], data: IAssigneeJobs[]) => {
+    const currentRowsClone = [...currentRows];
+    const loadingRowIndex = currentRowsClone.findIndex(row => row.rowType === RowType.LoadingRow);
+    currentRowsClone.splice(loadingRowIndex, 1);
+
+    const newRows: IDisplayRow[] = [];
     for (let i=0; i<data.length; i++) {
         const item = data[i];
         if (item.assignee.id === item.assignee.leadId) {
-            items.push({
+            newRows.push({
                 rowId: item.assignee.id + 1,
                 rowType: RowType.LeadRow,
                 rowData: item,
             });
         }
-        items.push({
+        newRows.push({
             rowId: item.assignee.id,
             rowType: RowType.AssignmentRow,
             rowData: item,
         })
     }
-    items.push({
+    newRows.push({
         rowId: -1,
         rowType: RowType.LoadingRow,
         rowData: null,
     })
-    return items;
+
+    return [...currentRowsClone, ...newRows];
 }
 
 const FETCH_COUNT = 10;
@@ -76,10 +81,8 @@ export const Loader: FC = () => {
         const fetchedData = await fetch(cursorRef.current, FETCH_COUNT);
         cursorRef.current = cursorRef.current + FETCH_COUNT; // NOT cursorRef.current + FETCH_COUNT + 1
 
-        const itemsClone = [...itemsRef.current];
-        itemsClone.pop();
-        itemsClone.push(...adaptData(fetchedData));
-        itemsRef.current = itemsClone;
+        const newRows = adaptData(itemsRef.current ?? [], fetchedData);
+        itemsRef.current = newRows;
         setDisplayedItems(itemsRef.current);
     }
 
