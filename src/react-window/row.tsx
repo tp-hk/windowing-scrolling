@@ -2,6 +2,7 @@ import { FC } from 'react';
 import { LOADING, itemStatusMap } from './api';
 import { LeadRow } from './lead-row';
 import { AssignmentRow } from './assignment-row';
+import { LoadingRow } from '../tanstack-virtual/loading-row';
 
 interface RowProps {
   index: number;

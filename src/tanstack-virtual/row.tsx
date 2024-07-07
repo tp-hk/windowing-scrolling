@@ -1,24 +1,27 @@
-import { FC } from 'react';
 import { IDisplayRow, RowType } from './api';
 import { AssignmentRow } from './assignment-row';
 import { LeadRow } from './lead-row';
+import { LoadingRow } from './loading-row';
 
 interface RowProps {
-    data: IDisplayRow;
+    row: IDisplayRow;
+    // should be shared via context to avoid props drilling
+    fetchData: () => Promise<void>;
 }
 
-export const Row: FC<RowProps> = ({ data }) => {
-    const { rowType, rowData } = data;
-    if (rowType === RowType.LeadRow) {
-        return <LeadRow data={data} />
+export const getRow = ({ row, fetchData }: RowProps) => {
+    const { rowType, rowData } = row;
+
+    if (rowType === RowType.LeadRow && rowData) {
+        return <LeadRow assigneeJobs={rowData} />
     }
 
     if (rowType === RowType.AssignmentRow) {
-        return <AssignmentRow rowData={rowData!}/>;
+        return <AssignmentRow assigneeJobs={rowData!} />;
     }
 
     if (rowType === RowType.LoadingRow) {
-        return <div className="loadingUi">Loading...</div>;
+        return <LoadingRow fetchData={fetchData} />
     }
 
     return null;

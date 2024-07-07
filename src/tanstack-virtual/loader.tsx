@@ -1,7 +1,7 @@
 import { FC, useRef, useEffect, useState, Fragment } from 'react';
 import { useVirtualizer, Range } from '@tanstack/react-virtual';
 import { DAY_COUNT, IAssigneeJobs, IDisplayRow, data, createAssignee, createJobsForDays, RangeOption, RowType, fetch } from './api';
-import { Row } from './row';
+import { getRow } from './row';
 import { faker } from '@faker-js/faker';
 import { Header } from './header';
 
@@ -13,11 +13,6 @@ const defaultRange: Range = {
 };
 
 const leads = data.filter(assignment => assignment.assignee.isLead);
-
-const findDataIndexFromAssignedId = (assigneeId: number) => {
-    const dataIndex = data.findIndex(item => item.assignee.id === assigneeId);
-    return dataIndex
-}
 
 const adaptData = (data: IAssigneeJobs[]) => {
     const items: IDisplayRow[] = [];
@@ -79,9 +74,12 @@ export const Loader: FC = () => {
 
     const fetchData = async () => {
         const fetchedData = await fetch(cursorRef.current, FETCH_COUNT);
-        cursorRef.current = cursorRef.current + FETCH_COUNT + 1;
+        cursorRef.current = cursorRef.current + FETCH_COUNT; // NOT cursorRef.current + FETCH_COUNT + 1
 
-        itemsRef.current.push(...adaptData(fetchedData));
+        const itemsClone = [...itemsRef.current];
+        itemsClone.pop();
+        itemsClone.push(...adaptData(fetchedData));
+        itemsRef.current = itemsClone;
         setDisplayedItems(itemsRef.current);
     }
 
@@ -249,6 +247,7 @@ export const Loader: FC = () => {
                     }}
                 >
                     <div      
+                        id="list"
                         style={{
                             position: 'absolute',
                             top: 0,
@@ -258,14 +257,14 @@ export const Loader: FC = () => {
                         }}
                     >
                     {
-                        virtualizedItems.map((virtualRow => {
-                            const item = displayedItems[virtualRow.index];
+                        virtualizedItems.map(((virtualRow) => {
+                            const row = displayedItems[virtualRow.index];
                             return (
                                 <div 
                                     key={virtualRow.key}
                                     data-index={virtualRow.index}
                                     ref={virtualizer.measureElement}>
-                                        <Row data={item} />
+                                        {getRow({ row, fetchData})}
                                 </div>
                                 
                             )

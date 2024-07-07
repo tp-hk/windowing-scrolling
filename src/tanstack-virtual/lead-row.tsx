@@ -1,18 +1,18 @@
 import { FC } from 'react';
-import { IDisplayRow } from './api';
+import { IAssigneeJobs, getDataIndex } from './api';
 
 interface RowProps {
-    data: IDisplayRow;
+    assigneeJobs: IAssigneeJobs;
 }
 
-export const LeadRow: FC<RowProps> = ({ data }) => {
-    const { rowData } = data;
+export const LeadRow: FC<RowProps> = ({ assigneeJobs: data }) => {
+    const dataIndex = getDataIndex(data.assignee.id)
     return (
         <div style={{
             height: `30px`,
             border: '1px solid #000',
             background: '#323232',
             color: '#fff',
-        }}>{rowData!.assignee.name}</div>
+        }}>{dataIndex}: {data.assignee.name}</div>
     );
 };

@@ -1,9 +1,9 @@
-import { FC, ReactNode, useEffect } from 'react';
-import { IDisplayRow, IJob, DAY_COUNT, IAssigneeJobs } from './api';
+import { FC, ReactNode } from 'react';
+import { getDataIndex, IJob, DAY_COUNT, IAssigneeJobs } from './api';
 import { JobBlock } from './job-block';
 
 interface RowProps {
-    rowData: IAssigneeJobs;
+    assigneeJobs: IAssigneeJobs;
 }
 
 const groupJobsByDays = (jobs: IJob[]): Map<number, IJob[]> => {
@@ -16,14 +16,15 @@ const groupJobsByDays = (jobs: IJob[]): Map<number, IJob[]> => {
     return map;
 }
 
-export const AssignmentRow: FC<RowProps> = ({ rowData }) => {
-    const { assignee, jobs } = rowData;
+export const AssignmentRow: FC<RowProps> = ({ assigneeJobs }) => {
+    const { assignee, jobs } = assigneeJobs;
     const jobsBydays = groupJobsByDays(jobs);
     const colWidth = 100 / (DAY_COUNT + 1);
+    const dataIndex = getDataIndex(assignee.id);
 
     const getColumns = () => {
         const cols: ReactNode[] = [];
-        cols.push(<div key={`assignee-${assignee.id}`}  style={{width: `${colWidth}%`}}>{assignee.name}</div>);
+        cols.push(<div key={`assignee-${assignee.id}`}  style={{width: `${colWidth}%`}}>{dataIndex}: {assignee.name}</div>);
         for (let i=0; i<DAY_COUNT; i++) {
             const jobBlock: ReactNode[] = [];
             const jobs = (jobsBydays.get(i) ?? []);

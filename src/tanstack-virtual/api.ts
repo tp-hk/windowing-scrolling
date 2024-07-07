@@ -119,3 +119,10 @@ export const createJobsForDays = (assignee: number): IJob[] => {
 }
 
 export const data = getData();
+
+export const getDataIndex = (assigneeId: number | undefined) => {
+    if (assigneeId === undefined) {
+        return -1;
+    }
+    return data.findIndex(a => a.assignee.id === assigneeId);
+}
