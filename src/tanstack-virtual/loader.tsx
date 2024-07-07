@@ -12,12 +12,13 @@ const defaultRange: Range = {
     count: 0
 };
 
-const leads = data.filter(assignment => assignment.assignee.isLead);
-
-const adaptData = (currentRows: IDisplayRow[], data: IAssigneeJobs[]) => {
+// TODO: break down adaptData to data-processing & inserting into itemsRef.current
+const adaptData = (currentRows: IDisplayRow[], data: IAssigneeJobs[], addLoadingRow = true) => {
     const currentRowsClone = [...currentRows];
     const loadingRowIndex = currentRowsClone.findIndex(row => row.rowType === RowType.LoadingRow);
-    currentRowsClone.splice(loadingRowIndex, 1);
+    if (addLoadingRow) {
+        currentRowsClone.splice(loadingRowIndex, 1);
+    }
 
     const newRows: IDisplayRow[] = [];
     for (let i=0; i<data.length; i++) {
@@ -35,7 +36,7 @@ const adaptData = (currentRows: IDisplayRow[], data: IAssigneeJobs[]) => {
             rowData: item,
         });
 
-        if (i === Math.round(data.length/2)) {
+        if (addLoadingRow && i === Math.round(data.length/2)) {
             newRows.push({
                 rowId: -1,
                 rowType: RowType.LoadingRow,
@@ -53,7 +54,7 @@ let isMounted = false;
 export const Loader: FC = () => {
     const [displayedItems, setDisplayedItems] = useState<IDisplayRow[]>([]); 
     const parentRef = useRef<HTMLDivElement>(null);
-    const leadIndexRef = useRef(0);
+    // const leadIndexRef = useRef(0);
     const rangeRef = useRef<Range>(defaultRange);
     const cursorRef = useRef(0);
     const itemsRef = useRef<IDisplayRow[]>([]);
@@ -165,8 +166,8 @@ export const Loader: FC = () => {
     }
 
     const addAssignee = (rangeOption: RangeOption) => {
-        const origRowData = getRowIndex(rangeOption);
-        const rowIndex = origRowData === 0 ? 1 : origRowData;
+        const origRowIndex = getRowIndex(rangeOption);
+        const rowIndex = 1; // origRowIndex === 0 ? 1 : origRowIndex;
         const lastRow = displayedItems[rowIndex - 1];
         if (!lastRow.rowData) {
             return;
@@ -174,7 +175,7 @@ export const Loader: FC = () => {
 
         let lastLeadId = -1;
         let isLead = false;
-        if (lastRow && lastRow.rowData.assignee) {
+        if (lastRow?.rowData?.assignee) {
             lastLeadId = lastRow.rowData.assignee.leadId;
         } else {
             isLead = true;
@@ -183,17 +184,18 @@ export const Loader: FC = () => {
         const jobs = createJobsForDays(assignee.id);
 
         // supposedly server side operation
-        data.splice(rowIndex, 0, {
+        const assignment: IAssigneeJobs = {
             assignee, 
             jobs
-        });
+        };
+        console.log(`add to ${rowIndex}: assignee ${assignee.name}`);
+        data.splice(rowIndex, 0, assignment);
 
-        console.log(`added assignee ${assignee.name}`);
 
-        const newRows = adaptData([data[rowIndex]]);
-        const itemsClone = [...itemsRef.current];
-        itemsClone.splice(rowIndex, 0, ...newRows);
-        setDisplayedItems(itemsClone);
+        // TODO: assignment will be push to the end of of itemsRef.current regardless of rowIndex
+        const newRows = adaptData(itemsRef.current, [assignment], false);
+        itemsRef.current = newRows;
+        setDisplayedItems(itemsRef.current);
     }
 
     const removeAssignee = (rangeOption: RangeOption) => {
@@ -216,15 +218,6 @@ export const Loader: FC = () => {
         setDisplayedItems(itemsClone);
     }
 
-    const jumpToLead = () => {
-        leadIndexRef.current += 1;
-        const lead = leads[leadIndexRef.current];
-        const leadId = lead.assignee.id;
-        console.log(`scrolling to lead ${leadId}: ${lead.assignee.name}`);
-        const rowIndex = displayedItems.findIndex(item => item.rowData?.assignee.id === lead.assignee.id) ?? 0;
-        virtualizer.scrollToIndex(rowIndex);
-    }
-
     return (
         <Fragment>
             <Header
@@ -232,7 +225,6 @@ export const Loader: FC = () => {
                 removeJob={removeJob}
                 addAssignee={addAssignee}
                 removeAssignee={removeAssignee}
-                jumpToLead={jumpToLead}
             />
             <div
                 ref={parentRef}
