@@ -13,6 +13,6 @@ export const LeadRow: FC<RowProps> = ({ assigneeJobs: data }) => {
             border: '1px solid #000',
             background: '#323232',
             color: '#fff',
-        }}>{dataIndex}: {data.assignee.name}</div>
+        }}>{data.assignee.name}</div>
     );
 };

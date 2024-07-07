@@ -102,6 +102,22 @@ export const Loader: FC = () => {
         isMounted = true;
     }, []);
 
+    useEffect(() => {
+        const scrollCallback = () => {
+            console.log(`direction: ${virtualizer.scrollDirection}`);
+        };
+        if (parentRef.current) {
+            parentRef.current!.addEventListener('scroll', scrollCallback);
+
+        }
+
+        return (() => {
+            if (parentRef.current) {
+                parentRef.current!.removeEventListener('scroll', scrollCallback);
+            }
+        })
+    }, []);
+
     const getRowIndex = (rangeOption: RangeOption) => {
         let index = 0;
         if (rangeOption === RangeOption.Before) {
@@ -165,6 +181,7 @@ export const Loader: FC = () => {
         setDisplayedItems([...itemsRef.current]);
     }
 
+    // TODO: buggy
     const addAssignee = (rangeOption: RangeOption) => {
         const origRowIndex = getRowIndex(rangeOption);
         const rowIndex = 1; // origRowIndex === 0 ? 1 : origRowIndex;
@@ -198,6 +215,7 @@ export const Loader: FC = () => {
         setDisplayedItems(itemsRef.current);
     }
 
+    // TODO: buggy
     const removeAssignee = (rangeOption: RangeOption) => {
         const rowIndex = getRowIndex(rangeOption);
         const row = displayedItems[rowIndex];
